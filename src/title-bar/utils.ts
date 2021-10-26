@@ -57,16 +57,16 @@ export const menuItemClick = (
       break;
     case 'radio': {
       toggleCheckedState(menu, idx, true);
-      item.click(item, currentWindow, e);
+      item.click(item, currentWindow);
       break;
     }
     case 'checkbox': {
       toggleCheckedState(menu, idx);
-      item.click(item, currentWindow, e);
+      item.click(item, currentWindow);
       break;
     }
     default:
-      item.click(item, currentWindow, e);
+      item.click(item, currentWindow);
       break;
   }
   dispatch({ type: 'reset' });
