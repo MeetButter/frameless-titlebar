@@ -10,7 +10,7 @@ export interface MenuItem {
   before?: number | string;
   after?: number | string;
   accelerator?: string;
-  click?: (menu: MenuItem, browser: object | undefined, e: Event) => void;
+  click?: (menu?: MenuItem, browser?: object | undefined, e?: Event) => void;
 }
 
 export type Platform = 'win32' | 'linux' | 'darwin';
