@@ -3,25 +3,30 @@ import React, {
   useContext,
   useEffect,
   useState,
-  useCallback
-} from 'react';
-import { ThemeContext } from '../theme';
-import MenuList from './menu-list';
-import { currentSelected, isItemSubMenu } from '../utils';
-import styles from '../style.css';
-import { MenuButtonProps, FullMenuBottonProps, MenuButtonTheme } from '../typings';
-import Button from '../components/button';
+  useCallback,
+  useMemo,
+} from "react";
+import { ThemeContext } from "../theme";
+import MenuList from "./menu-list";
+import { currentSelected, isItemSubMenu } from "../utils";
+import styles from "../style.css";
+import {
+  MenuButtonProps,
+  FullMenuBottonProps,
+  MenuButtonTheme,
+} from "../typings";
+import Button from "../components/button";
 
-const useAltLabel = (l?: string): { first?: string, rest?: string } => {
+const useAltLabel = (l?: string): { first?: string; rest?: string } => {
   const [label, setLabel] = useState({
     first: l?.slice(0, 1),
-    rest: l?.slice(1)
+    rest: l?.slice(1),
   });
 
   useEffect(() => {
     setLabel({
       first: l?.slice(0, 1),
-      rest: l?.slice(1)
+      rest: l?.slice(1),
     });
   }, [l]);
 
@@ -39,66 +44,88 @@ const MenuButton = ({
   depth,
   selectedPath,
   dispatch,
-  icon
+  icon,
 }: FullMenuBottonProps) => {
   const theme = useContext(ThemeContext);
   const label = useAltLabel(item.label);
+
+  const selected = useMemo(() => {
+    return currentSelected(selectedPath, depth) === idx;
+  }, [selectedPath, depth, idx]);
+
   const onClose = useCallback(() => {
     if (myRef.current) {
       myRef.current.blur();
     }
-    dispatch({ type: 'set', depth, selected: -1 });
+    dispatch({ type: "set", depth, selected: -1 });
   }, [myRef.current]);
 
-
-  const onClick = useCallback(() => {
+  const onOpen = useCallback(() => {
     if (!item.disabled) {
-      dispatch({ type: 'button-set', depth, selected: idx });
+      dispatch({ type: "button-set", depth, selected: idx });
     }
   }, [idx, item.disabled]);
 
-  const onHover = useCallback((hovering: boolean) => {
-    if (currentSelected(selectedPath, depth) >= 0 && hovering) {
-      onClick();
+  const onClick = useCallback(() => {
+    /**
+     * if menu is opened, close the menu
+     */
+    if (selected) {
+      onClose();
+    } else {
+      /**
+       * else, open the menu
+       */
+      onOpen();
     }
-  }, [myRef.current, selectedPath, depth, onClick]);
+  }, [onClose, selected, onOpen]);
 
-  const selected = currentSelected(selectedPath, depth) === idx;
+  const onHover = useCallback(
+    (hovering: boolean) => {
+      if (currentSelected(selectedPath, depth) >= 0 && hovering) {
+        onOpen();
+      }
+    },
+    [myRef.current, selectedPath, depth, onOpen]
+  );
+
   const isSubMenu = isItemSubMenu(item);
   const open: boolean = !(item?.disabled ?? false) && isSubMenu && selected;
-  const textDecoration = !item.disabled && altKey ? 'underline' : 'none';
+  const textDecoration = !item.disabled && altKey ? "underline" : "none";
 
   return (
     <Button
       ref={myRef}
       disabled={item.disabled ?? false}
       open={open}
-      theme={{ ...theme.bar.button as Required<MenuButtonTheme> }}
+      theme={{ ...(theme.bar.button as Required<MenuButtonTheme>) }}
       focused={focused}
       style={style}
       inactiveOpacity={theme.bar.inActiveOpacity!}
       onClick={onClick}
-      label={icon ?? (
-        <Fragment>
-          <span
-            className={styles.MenuButtonLabel}
-            style={{
-              textDecoration
-            }}
-            aria-hidden="true"
-            tabIndex={-1}
-          >
-            {label.first}
-          </span>
-          <span
-            className={styles.MenuButtonLabel}
-            aria-hidden="true"
-            tabIndex={-1}
-          >
-            {label.rest}
-          </span>
-        </Fragment>
-      )}
+      label={
+        icon ?? (
+          <Fragment>
+            <span
+              className={styles.MenuButtonLabel}
+              style={{
+                textDecoration,
+              }}
+              aria-hidden="true"
+              tabIndex={-1}
+            >
+              {label.first}
+            </span>
+            <span
+              className={styles.MenuButtonLabel}
+              aria-hidden="true"
+              tabIndex={-1}
+            >
+              {label.rest}
+            </span>
+          </Fragment>
+        )
+      }
       onOverlayClick={onClose}
       onHover={onHover}
     >
@@ -115,6 +142,10 @@ const MenuButton = ({
   );
 };
 
-export default React.forwardRef<HTMLDivElement, MenuButtonProps>((props, ref) => {
-  return <MenuButton {...props} myRef={ref as React.RefObject<HTMLDivElement>} />
-});
+export default React.forwardRef<HTMLDivElement, MenuButtonProps>(
+  (props, ref) => {
+    return (
+      <MenuButton {...props} myRef={ref as React.RefObject<HTMLDivElement>} />
+    );
+  }
+);
