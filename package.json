@@ -1,6 +1,6 @@
 {
   "name": "@meetbutter/frameless-titlebar",
-  "version": "2.1.6",
+  "version": "2.1.7",
   "description": "Customizable titlebar for frameless Electron desktop applications, forked by the Butter team",
   "author": "MeetButter Devs",
   "license": "MIT",
